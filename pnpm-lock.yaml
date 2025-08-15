@@ -38,6 +38,9 @@ importers:
       tsx:
         specifier: ^4.20.4
         version: 4.20.4
+      zod:
+        specifier: ^4.0.17
+        version: 4.0.17
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -4494,6 +4497,9 @@ packages:
 
   zimmerframe@1.1.2:
     resolution: {integrity: sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==}
+
+  zod@4.0.17:
+    resolution: {integrity: sha512-1PHjlYRevNxxdy2JZ8JcNAw7rX8V9P1AKkP+x/xZfxB0K5FYfuV+Ug6P/6NVSR2jHQ+FzDDoDHS04nYUsOIyLQ==}
 
 snapshots:
 
@@ -9337,3 +9343,5 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zimmerframe@1.1.2: {}
+
+  zod@4.0.17: {}
