@@ -17,3 +17,18 @@ test('GET /users should return status OK, empty list', async () => {
   expect(response.status).toBe(200);
   expect(response.data).toEqual({users: []});
 });
+
+test('POST /notifications is working', async () => {
+  const notifyEvent = {
+    "id": "NOT-123e4567-e89b-12d3-a456-426614174000",
+    "userId": "USR-123e4567-e89b-12d3-a456-426614174000",
+    "channel": "EMAIL",
+    "body": "Welcome to our platform! Your account has been successfully created."
+}
+
+  const response = await axios.post(`${BASE_URL}/notifications`, notifyEvent);
+
+
+
+  expect(response.status).toBe(201);
+});
