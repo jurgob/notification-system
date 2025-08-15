@@ -132,11 +132,15 @@ async function startNotificationService() {
         bootstrapBrokers: ['localhost:9092']
     })
     const TOPICS = CHANNELS
-    await notificationAdmin.createTopics({
-        topics: [...TOPICS],
-        partitions: 3,
-        replicas: 1
-    })
+    const CURRENT_TOPICS = await notificationAdmin.listTopics()
+    const TOPIC_TO_CREATE = TOPICS.filter(topic => !CURRENT_TOPICS.includes(topic));
+
+    if(TOPIC_TO_CREATE.length > 0)
+        await notificationAdmin.createTopics({
+            topics: [...TOPICS],
+            partitions: 3,
+            replicas: 1
+        })
 
 }
 
@@ -181,7 +185,7 @@ app.use('/api', notificationsRouter);
 async function main(){
     console.log(`START APP`)
     console.log(`START KAFKA `)
-    // await startNotificationService()
+    await startNotificationService()
     console.log(`START API`)
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
