@@ -1,32 +1,30 @@
 {
   "name": "web",
-  "version": "0.1.0",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack --port 3000",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint --max-warnings 0",
-    "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
-    "next": "^15.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@react-router/node": "^7.7.1",
+    "@react-router/serve": "^7.7.1",
+    "isbot": "^5.1.27",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.7.1"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@repo/vitest-config": "workspace:*",
-    "@types/node": "^22",
-    "@types/react": "19.0.8",
-    "@types/react-dom": "19.0.3",
-    "@vitest/coverage-istanbul": "^3.2.4",
-    "eslint": "^9.21.0",
-    "typescript": "5.7.3",
-    "vitest": "^3.2.4"
+    "@react-router/dev": "^7.7.1",
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/node": "^20",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
