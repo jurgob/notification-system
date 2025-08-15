@@ -1,5 +1,8 @@
 import express from 'express';
 import {z} from 'zod';
+import { Producer, stringSerializers } from '@platformatic/kafka'
+import { Admin } from '@platformatic/kafka'
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -30,7 +33,8 @@ const OrganizationId = z.string().regex(/^ORG-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a
 }).brand<'OrganizationId'>();
 type OrganizationId = z.infer<typeof OrganizationId>;
 
-const Channel = z.enum(['EMAIL', 'APP']);
+const CHANNELS = ['EMAIL', 'APP'] as const;
+const Channel = z.enum(CHANNELS);
 type Channel = z.infer<typeof Channel>;
 
 const User = z.object({
@@ -46,20 +50,59 @@ const UserCreate = z.object({
     organizationId: OrganizationId
 });
 
+const Notification = z.object({
+    id: NotificationId,
+    userId: UserId,
+    channel: Channel,
+    body: z.string().max(500)
+});
 
+type Notification = z.infer<typeof Notification>;
+
+
+// -----------
 // STATUS
+// -----------
+
 const statusRouter = express.Router();
-statusRouter.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+
+
+
+async function checkKafkaHealth() {
+  const adminHealth = new Admin({
+  clientId: 'my-admin-health',
+  bootstrapBrokers: ['localhost:9092']
+})
+  const res = await adminHealth.listTopics()
+    .then(() => adminHealth.close())
+    .then(() => {
+      return { status: 'ok' ,};
+    })
+    .catch((err) => {
+      return { status: 'error', error: err.message };
+    });
+    
+    return res
+ 
+}
+
+statusRouter.get('/health', async (req, res) => {
+    const kafkaHealth = await checkKafkaHealth();
+    const status = kafkaHealth.status === 'ok' ? 200 : 500;
+    res.status(status).json({ kafka: kafkaHealth });
 });
 
 statusRouter.get('/status', (req, res) => {
     res.status(200).json({ status: 'OK'});
 });
 
+
+// -----------
 // USERS
+// -----------
 
 const userRouter = express.Router();
+
 userRouter.get('/users', (req, res) => {
     res.status(200).json({
         users:[]
@@ -70,23 +113,82 @@ userRouter.post('/users', (req, res) => {
     res.status(201).json({ name , email });
 });
 
+
+// -----------
 // NOTIFICATIONS
+// -----------
+const notificationsProducer = new Producer({
+  clientId: 'notification-producer',
+  bootstrapBrokers: ['localhost:9092'],
+  serializers: stringSerializers
+})
+
+
+
+
+async function startNotificationService() {
+    const notificationAdmin = new Admin({
+        clientId: 'my-admin-notification',
+        bootstrapBrokers: ['localhost:9092']
+    })
+    const TOPICS = CHANNELS
+    await notificationAdmin.createTopics({
+        topics: [...TOPICS],
+        partitions: 3,
+        replicas: 1
+    })
+
+}
+
 const notificationsRouter = express.Router();
 notificationsRouter.get('/notifications', (req, res) => {
     res.status(200).json({
         notifications:[]
     });
 });
-notificationsRouter.post('/notifications', (req, res) => {
-    const { userId , body} = req.body;
+notificationsRouter.post('/notifications', async (req, res) => {
+    const notificationRequest = Notification.safeParse(req.body)
+    if (!notificationRequest.success) {
+        return res.status(400).json({ error: notificationRequest.error })
+    }
+    const notification = notificationRequest.data
+    const { userId, body } = notification;
+    await notificationsProducer.send({
+        messages: [
+            {
+                topic: notification.channel,
+                key: notification.id,
+                value: notification.body,
+                headers: { source: 'api' }
+            }
+        ]
+    })
+
     res.status(201).json({ userId, body });
 });
+
+// -----------
+// SHARED
+// -----------
+
 
 
 app.use('/api', statusRouter);
 app.use('/api', userRouter);
 app.use('/api', notificationsRouter);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+
+async function main(){
+    console.log(`START APP`)
+    console.log(`START KAFKA `)
+    // await startNotificationService()
+    console.log(`START API`)
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+main().catch((err) => {
+    console.error(`ERROR INITIALIZIND APP`, err)
+    process.exit(1)
+})
