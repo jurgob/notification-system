@@ -70,6 +70,24 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.13.0)(@vitest/ui@3.0.7)(jsdom@26.0.0)
 
+  apps/template-express-api:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../packages/vitest-config
+      '@vitest/coverage-istanbul':
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4)
+      typescript:
+        specifier: latest
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.13.0)(@vitest/ui@3.0.7)(jsdom@26.0.0)
+
   apps/web:
     dependencies:
       '@repo/ui':
@@ -169,6 +187,24 @@ importers:
       typescript:
         specifier: latest
         version: 5.8.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.13.0)(@vitest/ui@3.0.7)(jsdom@26.0.0)
+
+  packages/template-library:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@vitest/coverage-istanbul':
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4)
+      typescript:
+        specifier: latest
+        version: 5.9.2
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.13.0)(@vitest/ui@3.0.7)(jsdom@26.0.0)
@@ -3079,6 +3115,11 @@ packages:
 
   typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  typescript@5.9.2:
+    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -6491,6 +6532,8 @@ snapshots:
   typescript@5.8.2: {}
 
   typescript@5.8.3: {}
+
+  typescript@5.9.2: {}
 
   uglify-js@3.19.3:
     optional: true

@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "all": "turbo run typecheck test",
     "test:projects": "vitest run",
     "test:projects:watch": "vitest --watch",
     "view-report": "turbo run view-report"

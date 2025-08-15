@@ -1,8 +1,9 @@
 {
-  "name": "@repo/math",
+  "name": "@repo/template-library",
   "type": "module",
   "scripts": {
     "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
     "build": "tsc",
     "test": "vitest run"
   },
