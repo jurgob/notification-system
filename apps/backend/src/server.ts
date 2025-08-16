@@ -1,5 +1,5 @@
-import express from 'express';
-import {z} from 'zod';
+import express, { RequestHandler } from 'express';
+import {z,ZodTypeAny} from 'zod';
 import { Consumer, jsonDeserializer, Producer, stringDeserializer, stringDeserializers, stringSerializers } from '@platformatic/kafka'
 import { Admin } from '@platformatic/kafka'
 import pino from "pino-http";
@@ -57,6 +57,43 @@ const Notification = z.object({
 
 type Notification = z.infer<typeof Notification>;
 
+
+import { Request, Response, NextFunction } from "express";
+
+export function zodBodyValidation<T extends ZodTypeAny>(
+  schema: T
+): RequestHandler<any, any, z.infer<T>> {
+  return (req: Request<any, any, z.infer<T>>, res: Response, next: NextFunction) => {
+    const parsed = schema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten() });
+    }
+
+    // overwrite req.body with the validated & typed version
+    req.body = parsed.data;
+    next();
+  };
+}
+
+// // Middleware factory with typing
+// export function authZod<T extends ZodTypeAny>(schema: T) {
+//   return (
+//     req: Request,
+//     res: Response,
+//     next: NextFunction
+//   ): void | Response => {
+//     const parsed = schema.safeParse(req.body);
+
+//     if (!parsed.success) {
+//       return res.status(400).json({ error: parsed.error.flatten() });
+//     }
+
+//     // Attach strongly-typed validated data
+//     req.validated = parsed.data as z.infer<T>;
+//     next();
+//   };
+// }
 
 // -----------
 // STATUS
@@ -163,16 +200,12 @@ function createNotificationsModule(){
             delete ACTIVE_NOTIFICATIONS_SESSIONS[session_id]
         });
     });
+    
 
-
-    notificationsRouter.post('/notifications', async (req, res) => {
-        const notificationRequest = Notification.safeParse(req.body)
-        if (!notificationRequest.success) {
-            return res.status(400).json({ error: notificationRequest.error })
-        }
-        const notification = notificationRequest.data
+    notificationsRouter.post('/notifications', zodBodyValidation(Notification), async (req, res) => {
+        const notification = req.body
         const { userId, body } = notification;
-        const kafkaSend = await notificationsProducer.send({
+        await notificationsProducer.send({
             messages: [
                 {
                     topic: notification.channel,
