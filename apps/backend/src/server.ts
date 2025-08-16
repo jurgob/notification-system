@@ -2,11 +2,9 @@ import express from 'express';
 import {z} from 'zod';
 import { Consumer, jsonDeserializer, Producer, stringDeserializer, stringDeserializers, stringSerializers } from '@platformatic/kafka'
 import { Admin } from '@platformatic/kafka'
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json());
+import pino from "pino-http";
+const pinoLogger = pino.default()
+const {logger}= pinoLogger
 
 
 // TYPES
@@ -160,7 +158,6 @@ function createNotificationsModule(){
             "Content-Type": "text/event-stream",
         });
         ACTIVE_NOTIFICATIONS_SESSIONS[session_id] = res
-        // res.write(`data: ${chunk}\n\n`);
         res.on("close", () => {
             res.end();
             delete ACTIVE_NOTIFICATIONS_SESSIONS[session_id]
@@ -175,7 +172,7 @@ function createNotificationsModule(){
         }
         const notification = notificationRequest.data
         const { userId, body } = notification;
-        await notificationsProducer.send({
+        const kafkaSend = await notificationsProducer.send({
             messages: [
                 {
                     topic: notification.channel,
@@ -185,7 +182,7 @@ function createNotificationsModule(){
                 }
             ]
         })
-
+        logger.info("notificationsProducer event ")
         res.status(201).json({ userId, body });
     });
 
@@ -214,10 +211,17 @@ function createNotificationsModule(){
         })
 
         stream.on('data', message => {
-          const {key, value} = message
-          console.log(`Received: ${key} -> ${value}`)
+            const {key, value} = message
+            logger.info({
+                key, value
+            },"notificationsConsumer event ")
+          
+        //   console.log(`Received: ${key} -> ${value}`)
           Object.values(ACTIVE_NOTIFICATIONS_SESSIONS).forEach(res => {
              const chunk = JSON.stringify({key, value});
+             logger.info({
+                event:{key, value},
+            },"Dispatch event")
             res.write(`data: ${chunk}\n\n`);
           })
 
@@ -232,30 +236,35 @@ function createNotificationsModule(){
     }
 }
 // -----------
-// SHARED
+// INIT SERVER
 // -----------
 
+const app = express();
+const PORT = process.env.PORT || 3000;
 
+app.use(express.json());
+app.use(pinoLogger)
 const userModule = createUserModule()
 const notificationModule = createNotificationsModule()
 const healthModule = createHealthModule()
 
+// app.use(pino)
 app.use('/api', healthModule.router);
 app.use('/api', userModule.router);
 app.use('/api', notificationModule.router);
 
 
 async function main(){
-    console.log(`START APP`)
-    console.log(`START KAFKA `)
+    logger.info(`START APP`)
+    logger.info(`START KAFKA `)
     await notificationModule.init()
-    console.log(`START API`)
+    logger.info(`START API`)
     app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+        logger.info(`Server is running on port ${PORT}`);
     });
 }
 
 main().catch((err) => {
-    console.error(`ERROR INITIALIZIND APP`, err)
+    logger.error(`ERROR INITIALIZIND APP`, err)
     process.exit(1)
 })
