@@ -2,61 +2,14 @@ import express, { RequestHandler } from 'express';
 import {z,ZodTypeAny} from 'zod';
 import { Consumer, jsonDeserializer, Producer, stringDeserializer, stringDeserializers, stringSerializers } from '@platformatic/kafka'
 import { Admin } from '@platformatic/kafka'
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import { initServer } from '@ts-rest/express';
+import { createExpressEndpoints } from '@ts-rest/express';
 import pino from "pino-http";
 const pinoLogger = pino.default()
 const {logger}= pinoLogger
-
-
-// TYPES
-
-const UserId = z.string().regex(/^USR-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, {
-    message: "Invalid User ID format"
-}).brand<'UserId'>();
-type UserId = z.infer<typeof UserId>;
-
-const UserName = z.string().min(2).max(100)
-type UserName = z.infer<typeof UserName>;
-
-const Email = z.email({ message: "Please provide a valid email" });;
-type Email = z.infer<typeof Email>;
-
-const NotificationId = z.string().regex(/^NOT-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, {
-    message: "Invalid Notification ID format"
-}).brand<'NotificationId'>();
-type NotificationId = z.infer<typeof NotificationId>;
-
-
-const OrganizationId = z.string().regex(/^ORG-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i, {
-    message: "Invalid Organization ID format"
-}).brand<'OrganizationId'>();
-type OrganizationId = z.infer<typeof OrganizationId>;
-
-const CHANNELS = ['EMAIL', 'APP'] as const;
-const Channel = z.enum(CHANNELS);
-type Channel = z.infer<typeof Channel>;
-
-const User = z.object({
-    id: UserId,
-    email: Email,
-    name: UserName,
-    organizationId: OrganizationId
-});
-
-const UserCreate = z.object({
-    email: Email,
-    name: UserName,
-    organizationId: OrganizationId
-});
-
-const Notification = z.object({
-    id: NotificationId,
-    userId: UserId,
-    channel: Channel,
-    body: z.string().max(500)
-});
-
-type Notification = z.infer<typeof Notification>;
-
+import {CHANNELS, Notification} from "./types.js"
 
 import { Request, Response, NextFunction } from "express";
 
@@ -257,8 +210,11 @@ function createNotificationsModule(){
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(pinoLogger)
+
 const userModule = createUserModule()
 const notificationModule = createNotificationsModule()
 const healthModule = createHealthModule()

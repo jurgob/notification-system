@@ -29,12 +29,30 @@ importers:
       '@platformatic/kafka':
         specifier: ^1.9.0
         version: 1.9.0
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@22.13.0)(zod@4.0.17)
+      '@ts-rest/express':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@22.13.0)(zod@4.0.17))(express@5.1.0)(zod@4.0.17)
+      '@types/body-parser':
+        specifier: ^1.19.6
+        version: 1.19.6
+      '@types/cors':
+        specifier: ^2.8.19
+        version: 2.8.19
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
       axios:
         specifier: ^1.11.0
         version: 1.11.0
+      body-parser:
+        specifier: ^2.2.0
+        version: 2.2.0
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -1528,6 +1546,27 @@ packages:
   '@tootallnate/quickjs-emscripten@0.23.0':
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
 
+  '@ts-rest/core@3.52.1':
+    resolution: {integrity: sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==}
+    peerDependencies:
+      '@types/node': ^18.18.7 || >=20.8.4
+      zod: ^3.22.3
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      zod:
+        optional: true
+
+  '@ts-rest/express@3.52.1':
+    resolution: {integrity: sha512-ttVynyJSWYnVzn7FazSFvShD5j3Lq1JsIhSKereV2Z51zxWEQwo35CpCO3Q8rELzkfD9CYoT6eNSBJRlJLogIw==}
+    peerDependencies:
+      '@ts-rest/core': ~3.52.0
+      express: ^4.0.0
+      zod: ^3.22.3
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
 
@@ -1571,6 +1610,9 @@ packages:
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
+
+  '@types/cors@2.8.19':
+    resolution: {integrity: sha512-mFNylyeyqN93lfe/9CSxOGREz8cpzAhH+E93xJ4xWQf62V8sQ/24reV2nyzUWM6H6Xji+GGHpkbLe7pVoUEskg==}
 
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
@@ -2124,6 +2166,10 @@ packages:
 
   core-js-pure@3.40.0:
     resolution: {integrity: sha512-AtDzVIgRrmRKQai62yuSIN5vNiQjcJakJb4fbhVw3ehxx7Lohphvw9SGNWKhLFqSxC4ilD0g/L1huAYFQU3Q6A==}
+
+  cors@2.8.5:
+    resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
+    engines: {node: '>= 0.10'}
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
@@ -5896,6 +5942,18 @@ snapshots:
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
+  '@ts-rest/core@3.52.1(@types/node@22.13.0)(zod@4.0.17)':
+    optionalDependencies:
+      '@types/node': 22.13.0
+      zod: 4.0.17
+
+  '@ts-rest/express@3.52.1(@ts-rest/core@3.52.1(@types/node@22.13.0)(zod@4.0.17))(express@5.1.0)(zod@4.0.17)':
+    dependencies:
+      '@ts-rest/core': 3.52.1(@types/node@22.13.0)(zod@4.0.17)
+      express: 5.1.0
+    optionalDependencies:
+      zod: 4.0.17
+
   '@tsconfig/node10@1.0.11': {}
 
   '@tsconfig/node12@1.0.11': {}
@@ -5974,6 +6032,10 @@ snapshots:
       '@types/deep-eql': 4.0.2
 
   '@types/connect@3.4.38':
+    dependencies:
+      '@types/node': 22.13.0
+
+  '@types/cors@2.8.19':
     dependencies:
       '@types/node': 22.13.0
 
@@ -6712,6 +6774,11 @@ snapshots:
   cookie@1.0.2: {}
 
   core-js-pure@3.40.0: {}
+
+  cors@2.8.5:
+    dependencies:
+      object-assign: 4.1.1
+      vary: 1.1.2
 
   create-require@1.1.1: {}
 
