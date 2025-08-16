@@ -76,24 +76,6 @@ export function zodBodyValidation<T extends ZodTypeAny>(
   };
 }
 
-// // Middleware factory with typing
-// export function authZod<T extends ZodTypeAny>(schema: T) {
-//   return (
-//     req: Request,
-//     res: Response,
-//     next: NextFunction
-//   ): void | Response => {
-//     const parsed = schema.safeParse(req.body);
-
-//     if (!parsed.success) {
-//       return res.status(400).json({ error: parsed.error.flatten() });
-//     }
-
-//     // Attach strongly-typed validated data
-//     req.validated = parsed.data as z.infer<T>;
-//     next();
-//   };
-// }
 
 // -----------
 // STATUS
