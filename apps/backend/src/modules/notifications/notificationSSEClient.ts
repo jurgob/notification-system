@@ -1,5 +1,5 @@
-export type NotificationData = Record<string, string>
-export type OnDataFunction = (d:NotificationData) => void
+export type NotificationEvent = Record<string, string>
+export type OnDataFunction = (d:NotificationEvent) => void
 
 export function createNotificationSSEStream(
   url: string,

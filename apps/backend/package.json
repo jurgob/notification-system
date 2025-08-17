@@ -7,6 +7,16 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
+  "exports": {
+    "./users_sdk": {
+      "types": "./src/modules/users/sdk.ts",
+      "default": "./dist/modules/users/sdk.js"
+    },
+     "./notifications_sdk": {
+      "types": "./src/modules/notifications/sdk.ts",
+      "default": "./dist/modules/notifications/sdk.js"
+    }
+  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",

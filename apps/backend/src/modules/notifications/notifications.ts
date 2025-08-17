@@ -1,14 +1,16 @@
-import { Admin, Consumer, jsonDeserializer, Producer, stringDeserializer, stringDeserializers, stringSerializers } from '@platformatic/kafka'
+import { Admin, Consumer, Producer, stringDeserializers, stringSerializers } from '@platformatic/kafka'
 import {CHANNELS, Notification} from "../../types.js"
-import express, { RequestHandler } from 'express';
+import express from 'express';
 import { zodBodyValidation } from '../../utils/zod_utils.js';
 import {pinoLogger} from '../../logger.js';
 const {logger}= pinoLogger
+
 // -----------
 // NOTIFICATIONS
 // -----------
 
-export function createNotificationsModule(){
+
+export function createNotificationsModule(): { router: express.Router; init: () => Promise<void> } {
     const ACTIVE_NOTIFICATIONS_SESSIONS: Record<string, express.Response> = {}
 
     const notificationsProducer = new Producer({

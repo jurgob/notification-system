@@ -1,8 +1,7 @@
 import { expect, test } from "vitest";
 import axios from "axios";
-import {OnDataFunction,SdkCreateNotification,createNotificationSdk} from "../src/modules/notifications/sdk.js";
+import {OnDataFunction,SdkCreateNotification,createNotificationSdk,NotificationEvent} from "../src/modules/notifications/sdk.js";
 import {createUserSdk} from "../src/modules/users/sdk.js";
-import { NotificationData } from "../src/modules/notifications/notificationSSEClient.js";
 const PORT = 3000;
 const BASE_URL = `http://localhost:${PORT}/api`;
 
@@ -35,7 +34,7 @@ test('GET /users should return status OK, empty list', async () => {
 
 test('POST /notifications is working', async () => {
   const notificationClient = createNotificationSdk(BASE_URL)
-  const { promise, resolve } = promiseWithResolvers<NotificationData>();
+  const { promise, resolve } = promiseWithResolvers<NotificationEvent>();
   const myCallback: OnDataFunction = (data) => {
     console.log("Received data:", data);
     resolve(data)

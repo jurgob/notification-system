@@ -3,7 +3,7 @@ import express  from 'express';
 // -----------
 // USERS
 // -----------
-export function createUserModule(){
+export function createUserModule(): { router: express.Router } {
     const userRouter = express.Router();
 
     userRouter.get('/users', (req, res) => {
