@@ -25,7 +25,7 @@ export function Layout({children}: {children: React.ReactNode}) {
 }
 
 function getUserId(): undefined| string{
-  const userid: undefined| string = "USR-ebc3e453-10da-4ad9-ba5d-bdf7a468e4c5";
+  const userid: undefined| string = "USR-ebc3e453-10da-4ad9-ba5d-bdf7a468e4c5"; // TODO: MOCK LOGGED USER, In real life this should come from cookies
   return userid
 
 }
@@ -42,17 +42,19 @@ export async function action({ request }: Route.ActionArgs) : Promise<ActionResu
   const formData = await request.formData();
   const message = formData.get("message");
   const action = formData.get("action");
+  const userIdToNotify = formData.get("userId");
   const userid= getUserId()
 
 
   if (action === "createEvent") {
     if(!message || typeof message !== "string") return {success: false, error: "Message is required"};
+    if(!userIdToNotify || typeof userIdToNotify !== "string") return {success: false, error: "userIdToNotify is required"};
     if (!userid) return {success: false, error: "You must be logged int"};
 
     const notificationResponse:ActionResult = await notificationSdk.sendNotification({
       body: message,
       channel:"APP",
-      userId: userid
+      userId: userIdToNotify
     })
     .then((res) => {
       if (res.status> 299) {
@@ -88,7 +90,7 @@ export default function Home() {
       const notificationSdk = await createNotificationSdk(API_BASE_URL);
       const {close} = await notificationSdk.createNotificationsEventStream((data) => {
         addEvent(data);
-      })
+      },loggedUserId!)
       console.log(`return createStream`)
       return close
     }
@@ -135,6 +137,14 @@ export default function Home() {
                 <div>
                   <Form method="post">
                     <textarea name="message" rows={3} className="w-full border border-gray-300 rounded-lg p-2" />
+                    <br />
+                    <label htmlFor="userId" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">UserId: </label>
+                    <input 
+                      type="text" 
+                      name="userId" 
+                      defaultValue={loggedUserId} 
+                      className="w-full border border-gray-300 rounded-lg p-2 mb-4"
+                    />
                     <button
                       type="submit"
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

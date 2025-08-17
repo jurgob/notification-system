@@ -1,5 +1,5 @@
 import { Admin, Consumer, Producer, stringDeserializers, stringSerializers } from '@platformatic/kafka'
-import {CHANNELS, Notification} from "../../types.js"
+import {CHANNELS, Notification,NotificationSessionCreate} from "../../types.js"
 import express from 'express';
 import { zodBodyValidation } from '../../utils/zod_utils.js';
 import {pinoLogger} from '../../logger.js';
@@ -11,7 +11,7 @@ const {logger}= pinoLogger
 
 
 export function createNotificationsModule(): { router: express.Router; init: () => Promise<void> } {
-    const ACTIVE_NOTIFICATIONS_SESSIONS: Record<string, express.Response> = {}
+    const ACTIVE_NOTIFICATIONS_SESSIONS: Record<string, {res:express.Response, userId?: string}> = {}
     const SENT_EVENTS: Record<any, any> = [] 
 
     const notificationsProducer = new Producer({
@@ -43,15 +43,18 @@ export function createNotificationsModule(): { router: express.Router; init: () 
     });
 
 
-    notificationsRouter.get('/notifications/sessions', (req, res) => {
-        const session_id = crypto.randomUUID()
+    notificationsRouter.post('/notifications/sessions',zodBodyValidation(NotificationSessionCreate), (_req, res) => {
+        
         res.writeHead(200, {
             "Connection": "keep-alive",
             "Cache-Control": "no-cache",
             "Content-Type": "text/event-stream",
         });
-        ACTIVE_NOTIFICATIONS_SESSIONS[session_id] = res
+        const session_id = crypto.randomUUID()
+        ACTIVE_NOTIFICATIONS_SESSIONS[session_id] = {res}
+        logger.info(`/notifications/sessions STARTED, ${session_id}`);
         res.on("close", () => {
+            logger.info(`/notifications/sessions CLOSED, ${session_id}`);
             res.end();
             delete ACTIVE_NOTIFICATIONS_SESSIONS[session_id]
         });
@@ -102,15 +105,16 @@ export function createNotificationsModule(): { router: express.Router; init: () 
         streamApp.on('data', message => {
             const {key, value} = message
             logger.info({
-                key, value
+                key, value,
+                sessionsToNotify: Object.values(ACTIVE_NOTIFICATIONS_SESSIONS).length
             },"notificationsConsumer event ")
           
         //   console.log(`Received: ${key} -> ${value}`)
-          Object.values(ACTIVE_NOTIFICATIONS_SESSIONS).forEach(res => {
+          Object.values(ACTIVE_NOTIFICATIONS_SESSIONS).forEach(({res}) => {
              const chunk = JSON.stringify({key, value});
              logger.info({
                 event:{key, value},
-            },"Dispatch event")
+            },"-> Dispatch event")
             res.write(`data: ${chunk}\n\n`);
           })
             SENT_EVENTS.push({key, value,channel: 'APP'});

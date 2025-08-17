@@ -32,19 +32,21 @@ test('GET /users should return status OK, empty list', async () => {
   expect(response.data).toEqual({users: []});
 });
 
-test('POST /notifications is working', async () => {
+test.only('POST /notifications is working', async () => {
   const notificationClient = createNotificationSdk(BASE_URL)
   const { promise, resolve } = promiseWithResolvers<NotificationEvent>();
+  const userId = `USR-${crypto.randomUUID()}`
+  const userId2 = `USR-${crypto.randomUUID()}`
   const myCallback: OnDataFunction = (data) => {
     console.log("Received data:", data);
     resolve(data)
   }
-  const {close} = await notificationClient.createNotificationsEventStream(myCallback)
+  const {close} = await notificationClient.createNotificationsEventStream(myCallback,userId)
 
   const key = `NOT-${crypto.randomUUID()}`
   const message = "Welcome to our platform! Your account has been successfully created."
   const notifyEvent:SdkCreateNotification = {
-    "userId": `USR-${crypto.randomUUID()}`,
+    "userId": userId2,
     "channel": "APP",
     "body": message
   }

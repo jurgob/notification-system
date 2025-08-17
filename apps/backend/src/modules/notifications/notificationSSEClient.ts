@@ -1,16 +1,21 @@
 export type NotificationEvent = Record<string, string>
 export type OnDataFunction = (d:NotificationEvent) => void
-
 export function createNotificationSSEStream(
   url: string,
-  onData: OnDataFunction
+  onData: OnDataFunction,
+  userId: string,
 ) {
   const controller = new AbortController();
 
   (async () => {
     const response = await fetch(url, {
-      headers: { Accept: "text/event-stream" },
-      signal: controller.signal
+      headers: { 
+      Accept: "text/event-stream",
+      "Content-Type": "application/json" 
+      },
+      signal: controller.signal,
+      method: "POST",
+      body: JSON.stringify({ userId })
     });
 
     if (!response.body) throw new Error("No body in SSE response");

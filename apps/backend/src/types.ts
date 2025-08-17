@@ -40,6 +40,11 @@ export const UserCreate = z.object({
     organizationId: OrganizationId
 });
 
+export const NotificationSessionCreate = z.object({
+    userId: UserId
+});
+export type NotificationSessionCreate = z.infer<typeof NotificationSessionCreate>;  
+
 export const Notification = z.object({
     id: NotificationId,
     userId: UserId,
