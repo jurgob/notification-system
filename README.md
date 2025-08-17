@@ -129,6 +129,7 @@ in this way, in a context where we have multiple istances of this service runnin
 - I would have moved types and sdks in different monorepo package, in general you want to minimize the risk that some nodejs library got exported in some packages that are supposed to be used in the browser.
 - the actual email send is missing. what is needed here is to fetch the email quering via http the user module and then try to use the mail service. 
 - there's no userId validation across the API
+- there's no actual login in the webui, I just mocked a user
 
 
 
