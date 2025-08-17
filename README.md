@@ -128,8 +128,9 @@ In this way, in a context where we have multiple instances of this service runni
 - More tests.
 - I would have moved types and SDKs in different monorepo packages, in general you want to minimize the risk that some nodejs library gets exported in some packages that are supposed to be used in the browser.
 - The actual email send is missing. What is needed here is to fetch the email querying via HTTP the user module and then try to use the mail service. 
-- There's no userId validation across the API
-- There's no actual login in the web UI, I just mocked a user
+- The user module is just a bunch of mock endpoints, therefore:
+    - There's no userId validation across the API
+    - There's no actual login in the web UI, I just mocked a user
 
 
 
