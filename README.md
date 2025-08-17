@@ -130,3 +130,18 @@ In this way, in a context where we have multiple instances of this service runni
 - The actual email send is missing. What is needed here is to fetch the email querying via HTTP the user module and then try to use the mail service. 
 - There's no userId validation across the API
 - There's no actual login in the web UI, I just mocked a user
+
+
+
+
+# Some notes
+
+## How will the system scale?
+The system is designed for horizontal scalability through event-driven architecture. The queue-based fan-out pattern using Kafka allows producers and consumers to scale independently. Currently, the `notification` module combines both producer and consumer logic, but these would be separated into distinct services / packages. This separation enables independent scaling based on load - for instance, scaling up consumer instances during high notification volume without affecting the producer capacity. The microservice-ready modular design supports distributed deployment with proper load balancing and service discovery.
+
+## How easily will other engineers be able to contribute to it?
+The codebase follows a domain-driven design approach with clear module separation, making it relatively straightforward for new contributors to understand and extend. The monorepo structure with well-defined packages (`@repo/web`, `@repo/backend`) provides clear boundaries. 
+Type safety is emphasized throughout, with schema validation for all I/O operations (network requests, environment variables, databases, Kafka messages). The included TypeScript checks and test suite help catch errors early and serve as documentation for expected behavior. However, the project did not implement those principles completly mainly becaue of time. 
+
+## What are the trade-offs you made and why?
+The primary trade-off is choosing eventual consistency over immediate consistency by introducing Kafka as a message broker. This adds latency (typically milliseconds) but provides significant benefits in scalability, reliability, and system resilience. The asynchronous nature allows the system to handle traffic spikes gracefully and continue operating even if individual components fail temporarily. For most notification use cases, this slight delay is acceptable given the improved system robustness. However, for latency-critical applications (like real-time gaming or financial trading), a more direct synchronous approach might be preferred despite the scalability limitations.
