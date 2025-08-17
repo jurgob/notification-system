@@ -1,7 +1,7 @@
 export type NotificationData = Record<string, string>
 export type OnDataFunction = (d:NotificationData) => void
 
-export function notificationAppClient(
+export function createNotificationSSEStream(
   url: string,
   onData: OnDataFunction
 ) {

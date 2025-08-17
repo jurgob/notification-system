@@ -1,6 +1,7 @@
-import { expect, test, beforeAll, afterAll } from "vitest";
+import { expect, test } from "vitest";
 import axios from "axios";
-import {notificationAppClient,OnDataFunction} from "../src/notificationClient"
+import {OnDataFunction,SdkCreateNotification,createNotificationSdk} from "../src/modules/notifications/sdk.js";
+import { NotificationData } from "../src/modules/notifications/notificationSSEClient.js";
 const PORT = 3000;
 const BASE_URL = `http://localhost:${PORT}/api`;
 
@@ -31,32 +32,25 @@ test('GET /users should return status OK, empty list', async () => {
 });
 
 test('POST /notifications is working', async () => {
-   let { promise, resolve, reject } = promiseWithResolvers();
-
+  const notificationClient = createNotificationSdk(BASE_URL)
+  const { promise, resolve } = promiseWithResolvers<NotificationData>();
   const myCallback: OnDataFunction = (data) => {
+    console.log("Received data:", data);
     resolve(data)
   }
-
-  const client = await notificationAppClient(
-    `${BASE_URL}/notifications/sessions`,
-   myCallback
-  )
+  const {close} = await notificationClient.createNotificationsEventStream(myCallback)
 
   const key = `NOT-${crypto.randomUUID()}`
   const message = "Welcome to our platform! Your account has been successfully created."
-  const notifyEvent = {
-    "id": key,
+  const notifyEvent:SdkCreateNotification = {
     "userId": `USR-${crypto.randomUUID()}`,
     "channel": "APP",
     "body": message
-}
-
-
-  const responsePromise = axios.post(`${BASE_URL}/notifications`, notifyEvent)
+  }
+  const responsePromise = notificationClient.sendNotification(notifyEvent)
   const receivedEventPromise = promise
-
   const [response,receivedEvent] = await Promise.all([responsePromise,receivedEventPromise])
-  // client.close()
+
   expect(response.status).toBe(201);
-  expect(receivedEvent).toEqual({key, value: message})
+  expect(receivedEvent.value).toBe(message)
 });
