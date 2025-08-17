@@ -58,7 +58,7 @@ test('POST /notifications APP is working', async () => {
 });
 
 
-test.skip('POST /notifications APP is working, and is filtered correctly', async () => {
+test('POST /notifications APP is working, and is filtered correctly', async () => {
   const notificationClient1 = createNotificationSdk(BASE_URL)
   const notificationClient2 = createNotificationSdk(BASE_URL)
   
@@ -68,19 +68,17 @@ test.skip('POST /notifications APP is working, and is filtered correctly', async
   const promiseUser2Event = promiseWithResolvers<NotificationEvent>();
 
   const user1Callback: OnDataFunction = (data) => {
-    console.log("Received data:", data);
     promiseUser1Event.resolve(data)
   }
+  
   const user2Callback: OnDataFunction = (data) => {
-    console.log("Received data:", data);
     promiseUser2Event.resolve(data)
   }
   
   await notificationClient1.createNotificationsEventStream(user1Callback,userId1)
   await notificationClient2.createNotificationsEventStream(user2Callback,userId2)
   
-  // send event to user1
-  const key1 = `NOT-${crypto.randomUUID()}`
+  // Send event to user1
   const message1 = "Welcome to our platform! Your account has been successfully created. user 1"
   const notifyEvent1:SdkCreateNotification = {
     "userId": userId1,
@@ -88,15 +86,22 @@ test.skip('POST /notifications APP is working, and is filtered correctly', async
     "body": message1
   }
   const responsePromise1 = notificationClient1.sendNotification(notifyEvent1)
-// send event to user1
-  const key2 = `NOT-${crypto.randomUUID()}`
+
+  // Send event to user2
   const message2 = "Welcome to our platform! Your account has been successfully created. user 2"
-  const responsePromise2 = notificationClient1.sendNotification(notifyEvent1)
-  
-
-
-  const [response1,receivedEvent1, response2, receivedEvent2] = await Promise.all([responsePromise1,promiseUser1Event.promise, responsePromise2, promiseUser2Event.promise])
-
+  const notifyEvent2:SdkCreateNotification = {
+    "userId": userId2,
+    "channel": "APP",
+    "body": message2
+  }
+  const responsePromise2 = notificationClient2.sendNotification(notifyEvent2)
+  const [response1,receivedEvent1, response2, receivedEvent2] = await Promise.all([
+    responsePromise1,
+    promiseUser1Event.promise, 
+    responsePromise2, 
+    promiseUser2Event.promise 
+  ])
+  console.log("promise all after")
   expect(response1.status).toBe(201);
   expect(receivedEvent1.value).toBe(message1)
   expect(response2.status).toBe(201);

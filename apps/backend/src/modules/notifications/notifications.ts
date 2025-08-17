@@ -11,7 +11,7 @@ const {logger}= pinoLogger
 
 
 export function createNotificationsModule(): { router: express.Router; init: () => Promise<void> } {
-    const ACTIVE_NOTIFICATIONS_SESSIONS: Record<string, {res:express.Response, userId?: string}> = {}
+    const ACTIVE_NOTIFICATIONS_SESSIONS: Record<string, {res:express.Response, userId: string}> = {}
     const SENT_EVENTS: Record<any, any> = [] 
 
     const notificationsProducer = new Producer({
@@ -43,7 +43,8 @@ export function createNotificationsModule(): { router: express.Router; init: () 
     });
 
 
-    notificationsRouter.post('/notifications/sessions',zodBodyValidation(NotificationSessionCreate), (_req, res) => {
+    notificationsRouter.post('/notifications/sessions',zodBodyValidation(NotificationSessionCreate), (req, res) => {
+        const {userId} = req.body
         
         res.writeHead(200, {
             "Connection": "keep-alive",
@@ -51,7 +52,7 @@ export function createNotificationsModule(): { router: express.Router; init: () 
             "Content-Type": "text/event-stream",
         });
         const session_id = crypto.randomUUID()
-        ACTIVE_NOTIFICATIONS_SESSIONS[session_id] = {res}
+        ACTIVE_NOTIFICATIONS_SESSIONS[session_id] = {res,userId}
         logger.info(`/notifications/sessions STARTED, ${session_id}`);
         res.on("close", () => {
             logger.info(`/notifications/sessions CLOSED, ${session_id}`);
@@ -70,7 +71,7 @@ export function createNotificationsModule(): { router: express.Router; init: () 
                     topic: notification.channel,
                     key: notification.id,
                     value: notification.body,
-                    headers: { source: 'api' }
+                    headers: { source: 'api',userId: notification.userId }
                 }
             ]
         })
@@ -103,14 +104,17 @@ export function createNotificationsModule(): { router: express.Router; init: () 
         })
 
         streamApp.on('data', message => {
-            const {key, value} = message
+            const {key, value, headers} = message
+            const userId = headers.get("userId")||"";
             logger.info({
                 key, value,
                 sessionsToNotify: Object.values(ACTIVE_NOTIFICATIONS_SESSIONS).length
             },"notificationsConsumer event ")
           
         //   console.log(`Received: ${key} -> ${value}`)
-          Object.values(ACTIVE_NOTIFICATIONS_SESSIONS).forEach(({res}) => {
+          Object.values(ACTIVE_NOTIFICATIONS_SESSIONS)
+          .filter(ses => ses.userId === userId)
+          .forEach(({res}) => {
              const chunk = JSON.stringify({key, value});
              logger.info({
                 event:{key, value},
