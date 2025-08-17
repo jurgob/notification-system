@@ -12,6 +12,7 @@ const {logger}= pinoLogger
 
 export function createNotificationsModule(): { router: express.Router; init: () => Promise<void> } {
     const ACTIVE_NOTIFICATIONS_SESSIONS: Record<string, express.Response> = {}
+    const SENT_EVENTS = [] as Notification[]
 
     const notificationsProducer = new Producer({
         clientId: 'notifications-producer',
@@ -19,17 +20,32 @@ export function createNotificationsModule(): { router: express.Router; init: () 
         serializers: stringSerializers
     })
 
-   const notificationsConsumer = new Consumer({
-        groupId: 'notifications-consumer-group',
+    const kafkaAppConsumerId = crypto.randomUUID()
+    const notificationsConsumerAppChannel = new Consumer({
+        groupId: `notifications-consumer-group-app-${kafkaAppConsumerId}`,
         clientId: 'notifications-consumer',
         bootstrapBrokers: ['localhost:9092'],
         deserializers: stringDeserializers
     })
 
+    const notificationsConsumerEmailChannel = new Consumer({
+        groupId: `notifications-consumer-group-email`,
+        clientId: 'notifications-consumer',
+        bootstrapBrokers: ['localhost:9092'],
+        deserializers: stringDeserializers
+    })
+
+//    const notificationsConsumer = new Consumer({
+//         groupId: 'notifications-consumer-group',
+//         clientId: 'notifications-consumer',
+//         bootstrapBrokers: ['localhost:9092'],
+//         deserializers: stringDeserializers
+//     })
+
     const notificationsRouter = express.Router();
     notificationsRouter.get('/notifications', (req, res) => {
         res.status(200).json({
-            notifications:[]
+            notifications:SENT_EVENTS
         });
     });
 
@@ -83,14 +99,14 @@ export function createNotificationsModule(): { router: express.Router; init: () 
             })
         }
 
-        const stream = await notificationsConsumer.consume({
+        const streamApp = await notificationsConsumerAppChannel.consume({
             autocommit: true,
             topics: ['APP'],
             sessionTimeout: 10000,
             heartbeatInterval: 500
         })
 
-        stream.on('data', message => {
+        streamApp.on('data', message => {
             const {key, value} = message
             logger.info({
                 key, value
