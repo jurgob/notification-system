@@ -1,32 +1,14 @@
 import { expect, test } from "vitest";
 import { promiseWithResolvers } from "../utils/promise_with_resolvers.js";
-import axios from "axios";
 import {OnDataFunction,SdkCreateNotification,createNotificationSdk,NotificationEvent} from "../modules/notifications/sdk.js";
-import {createUserSdk} from "../modules/users/sdk.js";
 const API_BASE_URL = process.env.API_BASE_URL as string;
 
-
-test('GET /health should return status OK', async () => {
-  const response = await axios.get(`${API_BASE_URL}/health`);
-
-  expect(response.status).toBe(200);
-  expect(response.data.kafka).toHaveProperty('status', 'ok');
-});
-
-test('GET /users should return status OK, empty list', async () => {
-  const usersClient = createUserSdk(API_BASE_URL)
-  const response = await usersClient.getUsers();
-
-  expect(response.status).toBe(200);
-  expect(response.data).toEqual({users: []});
-});
 
 test('POST /notifications APP is working', async () => {
   const notificationClient = createNotificationSdk(API_BASE_URL)
   const { promise, resolve } = promiseWithResolvers<NotificationEvent>();
   const userId = `USR-${crypto.randomUUID()}`
   const myCallback: OnDataFunction = (data) => {
-    console.log("Received data:", data);
     resolve(data)
   }
   const {close} = await notificationClient.createNotificationsEventStream(myCallback,userId)
@@ -90,7 +72,7 @@ test('POST /notifications APP is working, and is filtered correctly', async () =
     responsePromise2, 
     promiseUser2Event.promise 
   ])
-  console.log("promise all after")
+
   expect(response1.status).toBe(201);
   expect(receivedEvent1.value).toBe(message1)
   expect(response2.status).toBe(201);

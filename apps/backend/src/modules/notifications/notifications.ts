@@ -3,6 +3,7 @@ import {CHANNELS, Notification,NotificationSessionCreate} from "../../types.js"
 import express from 'express';
 import { zodBodyValidation } from '../../utils/zod_utils.js';
 import {pinoLogger} from '../../logger.js';
+import { no } from 'zod/locales';
 const {logger}= pinoLogger
 
 // -----------
@@ -94,6 +95,7 @@ export function createNotificationsModule(): { router: express.Router; init: () 
                 partitions: 3,
                 replicas: 1
             })
+            notificationAdmin.close();
         }
 
         const streamApp = await notificationsConsumerAppChannel.consume({

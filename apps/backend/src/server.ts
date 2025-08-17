@@ -1,57 +1,11 @@
 import express  from 'express';
-import { Admin } from '@platformatic/kafka'
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import {pinoLogger} from './logger.js';
 const {logger}= pinoLogger
 import {createNotificationsModule} from "./modules/notifications/notifications.js";
 import {createUserModule} from "./modules/users/users.js";
-
-
-
-
-// -----------
-// STATUS
-// -----------
-
-
-function createHealthModule(){
-    const statusRouter = express.Router();
-
-    async function checkKafkaHealth() {
-    const adminHealth = new Admin({
-    clientId: 'my-admin-health',
-    bootstrapBrokers: ['localhost:9092']
-    })
-    const res = await adminHealth.listTopics()
-        .then(() => adminHealth.close())
-        .then(() => {
-        return { status: 'ok' ,};
-        })
-        .catch((err) => {
-        return { status: 'error', error: err.message };
-        });
-        
-        return res
-    
-    }
-
-    statusRouter.get('/health', async (req, res) => {
-        const kafkaHealth = await checkKafkaHealth();
-        const status = kafkaHealth.status === 'ok' ? 200 : 500;
-        res.status(status).json({ kafka: kafkaHealth });
-    });
-
-    statusRouter.get('/status', (req, res) => {
-        res.status(200).json({ status: 'OK'});
-    });
-
-    return {
-        router: statusRouter
-    }
-
-}
-
+import {createHealthModule} from "./modules/health/health.js";
 
 
 
