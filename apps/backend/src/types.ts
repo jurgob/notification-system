@@ -32,6 +32,7 @@ export const User = z.object({
     name: UserName,
     organizationId: OrganizationId
 });
+export type User = z.infer<typeof User>;
 
 export const UserCreate = z.object({
     email: Email,

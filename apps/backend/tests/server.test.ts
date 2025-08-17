@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import axios from "axios";
 import {OnDataFunction,SdkCreateNotification,createNotificationSdk} from "../src/modules/notifications/sdk.js";
+import {createUserSdk} from "../src/modules/users/sdk.js";
 import { NotificationData } from "../src/modules/notifications/notificationSSEClient.js";
 const PORT = 3000;
 const BASE_URL = `http://localhost:${PORT}/api`;
@@ -25,7 +26,8 @@ test('GET /health should return status OK', async () => {
 });
 
 test('GET /users should return status OK, empty list', async () => {
-  const response = await axios.get(`${BASE_URL}/users`);
+  const usersClient = createUserSdk(BASE_URL)
+  const response = await usersClient.getUsers();
 
   expect(response.status).toBe(200);
   expect(response.data).toEqual({users: []});
