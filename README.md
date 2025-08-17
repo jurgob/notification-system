@@ -8,12 +8,6 @@ Checkout the project, then:
 pnpm i
 ```
 
-then point your browser to: 
-
-```http://localhost:5173/```
-
-([link](http://localhost:5173/))
-
 
 ## Run it
 
@@ -28,7 +22,16 @@ in another one run:
 ```bash
 pnpm dev
 ```
+then point your browser to: 
 
+```http://localhost:5173/```
+
+([link](http://localhost:5173/))
+
+
+
+
+ You can get all the sended events with the api: `http://localhost:3000/api/notifications`
 
 
 
@@ -94,6 +97,29 @@ the backend contains 2 modules, in a real scenarios those modules would be micro
     - The Server is gonna produce a kafka event.
 
 - there's a kafka consumer which is gonna listen for all the notifications event with channel `APP`. for every event, it will notifiy the related SSE streams.
+
+#### about kafka-bases fan out: 
+
+Fan out logic have slighly different implementation based on the channel type. in this example, i implmented it like this: 
+
+```typescript
+   const kafkaAppConsumerId = crypto.randomUUID()
+    const notificationsConsumerAppChannel = new Consumer({
+        groupId: `notifications-consumer-group-app-${kafkaAppConsumerId}`,
+        clientId: 'notifications-consumer',
+        bootstrapBrokers: ['localhost:9092'],
+        deserializers: stringDeserializers
+    })
+
+    const notificationsConsumerEmailChannel = new Consumer({
+        groupId: `notifications-consumer-group-email`,
+        clientId: 'notifications-consumer',
+        bootstrapBrokers: ['localhost:9092'],
+        deserializers: stringDeserializers
+    })
+```
+
+in this way, in a context where we have multiple istances of this service running, every single SSE stream listening for APP notification will be notified, while only 1 mail is gonna be sended per user 
 
 
 ## What I would have done with more time. 

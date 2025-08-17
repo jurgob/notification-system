@@ -12,7 +12,7 @@ const {logger}= pinoLogger
 
 export function createNotificationsModule(): { router: express.Router; init: () => Promise<void> } {
     const ACTIVE_NOTIFICATIONS_SESSIONS: Record<string, express.Response> = {}
-    const SENT_EVENTS = [] as Notification[]
+    const SENT_EVENTS: Record<any, any> = [] 
 
     const notificationsProducer = new Producer({
         clientId: 'notifications-producer',
@@ -34,13 +34,6 @@ export function createNotificationsModule(): { router: express.Router; init: () 
         bootstrapBrokers: ['localhost:9092'],
         deserializers: stringDeserializers
     })
-
-//    const notificationsConsumer = new Consumer({
-//         groupId: 'notifications-consumer-group',
-//         clientId: 'notifications-consumer',
-//         bootstrapBrokers: ['localhost:9092'],
-//         deserializers: stringDeserializers
-//     })
 
     const notificationsRouter = express.Router();
     notificationsRouter.get('/notifications', (req, res) => {
@@ -120,7 +113,21 @@ export function createNotificationsModule(): { router: express.Router; init: () 
             },"Dispatch event")
             res.write(`data: ${chunk}\n\n`);
           })
+            SENT_EVENTS.push({key, value,channel: 'APP'});
 
+        })
+
+        
+        const streamEmail = await notificationsConsumerEmailChannel.consume({
+            autocommit: true,
+            topics: ['EMAIL'],
+            sessionTimeout: 10000,
+            heartbeatInterval: 500
+        })
+
+        streamEmail.on('data', message => {
+            const {key, value} = message
+            SENT_EVENTS.push({key, value, channel: 'EMAIL'});
         })
 
 
