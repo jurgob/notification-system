@@ -1,30 +1,20 @@
 import { expect, test } from "vitest";
-// Utility to create a promise with exposed resolve/reject
-function promiseWithResolvers<T>() {
-  let resolve!: (value: T | PromiseLike<T>) => void;
-  let reject!: (reason?: any) => void;
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { promise, resolve, reject };
-}
+import { promiseWithResolvers } from "../utils/promise_with_resolvers.js";
 import axios from "axios";
 import {OnDataFunction,SdkCreateNotification,createNotificationSdk,NotificationEvent} from "../modules/notifications/sdk.js";
 import {createUserSdk} from "../modules/users/sdk.js";
-const PORT = 3000;
-const BASE_URL = `http://localhost:${PORT}/api`;
+const API_BASE_URL = process.env.API_BASE_URL as string;
 
 
 test('GET /health should return status OK', async () => {
-  const response = await axios.get(`${BASE_URL}/health`);
+  const response = await axios.get(`${API_BASE_URL}/health`);
 
   expect(response.status).toBe(200);
   expect(response.data.kafka).toHaveProperty('status', 'ok');
 });
 
 test('GET /users should return status OK, empty list', async () => {
-  const usersClient = createUserSdk(BASE_URL)
+  const usersClient = createUserSdk(API_BASE_URL)
   const response = await usersClient.getUsers();
 
   expect(response.status).toBe(200);
@@ -32,7 +22,7 @@ test('GET /users should return status OK, empty list', async () => {
 });
 
 test('POST /notifications APP is working', async () => {
-  const notificationClient = createNotificationSdk(BASE_URL)
+  const notificationClient = createNotificationSdk(API_BASE_URL)
   const { promise, resolve } = promiseWithResolvers<NotificationEvent>();
   const userId = `USR-${crypto.randomUUID()}`
   const myCallback: OnDataFunction = (data) => {
@@ -58,8 +48,8 @@ test('POST /notifications APP is working', async () => {
 
 
 test('POST /notifications APP is working, and is filtered correctly', async () => {
-  const notificationClient1 = createNotificationSdk(BASE_URL)
-  const notificationClient2 = createNotificationSdk(BASE_URL)
+  const notificationClient1 = createNotificationSdk(API_BASE_URL)
+  const notificationClient2 = createNotificationSdk(API_BASE_URL)
   
   const userId1 = `USR-${crypto.randomUUID()}`
   const userId2 = `USR-${crypto.randomUUID()}`
