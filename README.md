@@ -90,7 +90,7 @@ the backend contains 2 modules, in a real scenarios those modules would be micro
 
 ### Architectureal Diagram
 
-- a Server Side Events stream can be created with a simple `GET /api/notifications/session`. the client will now receave all the pertinent events in that session
+- a Server Side Events stream can be created with a simple `POST /api/notifications/session`. the client will now receave all the pertinent events in that session
 
 - a notification can be created with just a simple POST /api/notifications request. 
     - The client is creating a key with a uuid and defining the `userId` the messages need to be delivered to and the `channel` (`APP`| `EMAIL`) the message need to use
@@ -127,6 +127,8 @@ in this way, in a context where we have multiple istances of this service runnin
 - I would have had more typesafety, expecially into the network comunication,  using libraries like `ts-rest`.
 - More tests.
 - I would have moved types and sdks in different monorepo package, in general you want to minimize the risk that some nodejs library got exported in some packages that are supposed to be used in the browser.
+- the actual email send is missing. what is needed here is to fetch the email quering via http the user module and then try to use the mail service. 
+- there's no userId validation across the API
 
 
 
