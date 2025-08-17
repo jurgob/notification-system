@@ -111,7 +111,6 @@ export function createNotificationsModule(): { router: express.Router; init: () 
                 sessionsToNotify: Object.values(ACTIVE_NOTIFICATIONS_SESSIONS).length
             },"notificationsConsumer event ")
           
-        //   console.log(`Received: ${key} -> ${value}`)
           Object.values(ACTIVE_NOTIFICATIONS_SESSIONS)
           .filter(ses => ses.userId === userId)
           .forEach(({res}) => {
