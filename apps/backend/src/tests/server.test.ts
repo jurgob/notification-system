@@ -1,7 +1,17 @@
 import { expect, test } from "vitest";
+// Utility to create a promise with exposed resolve/reject
+function promiseWithResolvers<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: any) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
 import axios from "axios";
-import {OnDataFunction,SdkCreateNotification,createNotificationSdk,NotificationEvent} from "../src/modules/notifications/sdk.js";
-import {createUserSdk} from "../src/modules/users/sdk.js";
+import {OnDataFunction,SdkCreateNotification,createNotificationSdk,NotificationEvent} from "../modules/notifications/sdk.js";
+import {createUserSdk} from "../modules/users/sdk.js";
 const PORT = 3000;
 const BASE_URL = `http://localhost:${PORT}/api`;
 
@@ -23,7 +33,7 @@ test('GET /users should return status OK, empty list', async () => {
 
 test('POST /notifications APP is working', async () => {
   const notificationClient = createNotificationSdk(BASE_URL)
-  const { promise, resolve } = Promise.withResolvers<NotificationEvent>();
+  const { promise, resolve } = promiseWithResolvers<NotificationEvent>();
   const userId = `USR-${crypto.randomUUID()}`
   const myCallback: OnDataFunction = (data) => {
     console.log("Received data:", data);
@@ -53,8 +63,8 @@ test('POST /notifications APP is working, and is filtered correctly', async () =
   
   const userId1 = `USR-${crypto.randomUUID()}`
   const userId2 = `USR-${crypto.randomUUID()}`
-  const promiseUser1Event = Promise.withResolvers<NotificationEvent>();
-  const promiseUser2Event = Promise.withResolvers<NotificationEvent>();
+  const promiseUser1Event = promiseWithResolvers<NotificationEvent>();
+  const promiseUser2Event = promiseWithResolvers<NotificationEvent>();
 
   const user1Callback: OnDataFunction = (data) => {
     promiseUser1Event.resolve(data)
